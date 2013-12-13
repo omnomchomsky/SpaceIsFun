@@ -10,6 +10,9 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
 using Ruminate.GUI.Framework;
 using Ruminate.GUI.Content;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 //using NUnit.Framework;
 //using Rhino.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -64,6 +67,8 @@ namespace SpaceIsFun
 
         State startMenu, battle, overworld, narrative, pauseState, introState;
 
+        Boolean battleStatus;
+
         /// <summary>
         /// the GUI object
         /// </summary>
@@ -96,6 +101,7 @@ namespace SpaceIsFun
         Dictionary<int, int> CrewToShip = new Dictionary<int, int>();
         Dictionary<int, int> CrewToRoom = new Dictionary<int, int>();
         Dictionary<int, bool> FilledRooms = new Dictionary<int, bool>();
+
         #endregion
 
         // definitions for all the textures go here
@@ -157,8 +163,36 @@ namespace SpaceIsFun
 
         public bool battle1Resolved = false;
         public bool battle2Resolved = false;
+        public bool battle1Result = false;
         public bool narrative1Resolved = false;
         public bool narrative2Resolved = false;
+
+        public int weaponSlotsIndex;
+        public int selectedWeaponUID;
+
+        public bool weapon1Enabled = false;
+        public bool weapon1Selected = false;
+        public bool weapon1Disabled = true;
+
+        public bool weapon2Enabled = false;
+        public bool weapon2Selected = false;
+        public bool weapon2Disabled = true;
+
+        public bool weapon3Enabled = false;
+        public bool weapon3Selected = false;
+        public bool weapon3Disabled = true;
+
+        public bool weapon4Enabled = false;
+        public bool weapon4Selected = false;
+        public bool weapon4Disabled = true;
+
+        public bool weapon5Enabled = false;
+        public bool weapon5Selected = false;
+        public bool weapon5Disabled = true;
+
+        Drawable overworldCursorDraw;
+
+        public bool masterGameEnd = false;
 
         /// <summary>
         /// width of the current screen, in pixels
@@ -230,9 +264,6 @@ namespace SpaceIsFun
 
             // init managers
 
-            // ALL OF THIS STUFF HAS BEEN MOVED TO LOAD CONTENT
-
-            // maybe move it back when we can... 
             
 
             
@@ -266,7 +297,7 @@ namespace SpaceIsFun
             roomHighlightSprite = Content.Load<Texture2D>("Room2x2");
             pixel = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.Green });
-            crewNoAnimate = Content.Load<Texture2D>("crewNoAnimate");
+            crewNoAnimate = Content.Load<Texture2D>("crewBlue");
             starTexture = Content.Load<Texture2D>("starNode");
             overworldCursorTexture = Content.Load<Texture2D>("overworldCursor");
             starGreyedTexture = Content.Load<Texture2D>("starNodeGreyed");
@@ -314,9 +345,23 @@ namespace SpaceIsFun
             }
 
             // create rooms, add them to the manager, pass their UIDs to the ship
-            int roomUID = RoomManager.AddEntity( new Room( roomHighlightSprite, roomHighlightSprite, 1, 1, playerShipStartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2,2));
+            int roomUID = RoomManager.AddEntity( new Room( roomHighlightSprite, roomHighlightSprite, 3, 1, playerShipStartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2,2));
             roomUIDs.Add(roomUID);
-            roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 3, 2, playerShipStartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+            roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 3, 3, playerShipStartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+            roomUIDs.Add(roomUID);
+            roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 3, 5, playerShipStartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+            roomUIDs.Add(roomUID);
+            roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 5, 2, playerShipStartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+            roomUIDs.Add(roomUID);
+            roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 5, 4, playerShipStartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+            roomUIDs.Add(roomUID);
+            roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 7, 2, playerShipStartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+            roomUIDs.Add(roomUID);
+            roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 7, 4, playerShipStartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+            roomUIDs.Add(roomUID);
+            roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 9, 3, playerShipStartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+            roomUIDs.Add(roomUID);
+            roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 11, 3, playerShipStartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
             roomUIDs.Add(roomUID);
 
             bool[] roomTypes = new bool[11];
@@ -326,23 +371,23 @@ namespace SpaceIsFun
                 roomTypes[i] = false;
             }
 
+
+
+            int weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 2, 500, 3));
+            weaponUIDs.Add(weaponUID);
             
 
-            int weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+            weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 2, 500, 3));
             weaponUIDs.Add(weaponUID);
-            
 
-            weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+            weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 2, 500, 3));
             weaponUIDs.Add(weaponUID);
-           
-            weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
-            weaponUIDs.Add(weaponUID);
-            
-            weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
-            weaponUIDs.Add(weaponUID);
-           
 
-            weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+            weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 2, 500, 3));
+            weaponUIDs.Add(weaponUID);
+
+
+            weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 2, 500, 3));
             weaponUIDs.Add(weaponUID);
 
             System.Diagnostics.Debug.WriteLine(weaponUIDs.Count);
@@ -362,6 +407,7 @@ namespace SpaceIsFun
             setUnwalkableGrids(playerShipUID);
             filledRoomUIDs = setCrewDictionary(playerShipUID);
             setFilledDict(playerShipUID, filledRoomUIDs);
+
 
             //playerShip = new Ship(shipTexture, gridSprite, gridHighlightSprite, new Vector2(50, 50), roomUIDs, gridUIDs, weaponUIDs, roomTypes);
 
@@ -535,6 +581,8 @@ namespace SpaceIsFun
             gui.AddText("error", new Ruminate.GUI.Framework.Text(font, Color.Red));
             gui.AddText("password", new Ruminate.GUI.Framework.Text(font, Color.TransparentBlack));
             gui.AddText("empty", new Ruminate.GUI.Framework.Text(font, Color.LightSlateGray));
+            gui.AddText("Oh, so you’re off to explore space are you? Good for you, though you might be forewarned that the Demonstrably Erratic Mostly-flying Object spacecraft that you’ve been assigned might be a bit, err, unique",
+                new Ruminate.GUI.Framework.Text(font, Color.White));
 
 
             #region stuff from initialize
@@ -577,10 +625,12 @@ namespace SpaceIsFun
 
             narrative.Transitions.Add(overworld.Name, overworld);
             narrative.Transitions.Add(pauseState.Name, pauseState);
+            narrative.Transitions.Add(battle.Name, battle);
 
             introState.Transitions.Add(overworld.Name, overworld);
 
-            stateMachine.Start(battle);
+            stateMachine.Start(startMenu);
+
             #endregion
 
             // set up any UI elements here
@@ -599,6 +649,12 @@ namespace SpaceIsFun
             setupBattle(playerShipUID);
             setupPauseState();
             setupOverworld();
+
+            setupIntro();
+
+
+            setupNarrative();
+            overworldCursorDraw = new Drawable(overworldCursorTexture, cursorCoords);
 
             #endregion
 
@@ -653,7 +709,7 @@ namespace SpaceIsFun
             #region input handling
 
             // initial pass on game pausing logic
-
+                /*
             // if space is pressed
             if (currentKeyState.IsKeyDown(Keys.Space) == true && previousKeyState.IsKeyUp(Keys.Space) == true)
             {
@@ -669,6 +725,7 @@ namespace SpaceIsFun
                     stateMachine.Transition(pauseState.Name);
                 }
             }
+                 * */
 
 
             #endregion
@@ -700,6 +757,7 @@ namespace SpaceIsFun
 
                     item.Draw(spriteBatch);
                 }
+                
                 overworldCursorDraw.Draw(spriteBatch);
                 spriteBatch.End();
             }
@@ -709,10 +767,13 @@ namespace SpaceIsFun
                 || stateMachine.CurrentState.Name == pauseState.Name && stateMachine.PreviousState.Name == battle.Name)
             {
                 spriteBatch.Begin();
+
+                
                 Ship playerShip = (Ship)ShipManager.RetrieveEntity(playerShipUID);
                 playerShip.Draw(spriteBatch);
 
                 // draw different stuff based on the current gamestate
+                
                 switch (gameStateUID)
                 {
                     case 0:
@@ -727,6 +788,15 @@ namespace SpaceIsFun
                     case 2:
                         //this is battle two
                         Ship enemyShip2 = (Ship)ShipManager.RetrieveEntity(enemyShipUID2);
+                        //System.Diagnostics.Debug.WriteLine("enemy ship id1:" + playerShipUID);
+                        //System.Diagnostics.Debug.WriteLine("enemy ship id1:"+enemyShipUID1);
+                        //System.Diagnostics.Debug.WriteLine("enemy ship id2:" + enemyShipUID2);
+
+
+                        
+
+                        
+
                         enemyShip2.Draw(spriteBatch);
                         break;
                     case 3:
@@ -734,7 +804,7 @@ namespace SpaceIsFun
 
                         break;
                     default:
-
+                        
                         break;
                         
                 }
@@ -743,10 +813,12 @@ namespace SpaceIsFun
 
                 GridManager.Draw(spriteBatch);
                 RoomManager.Draw(spriteBatch);
+
                 //System.Diagnostics.Debug.WriteLine("before crew draw");
                 CrewManager.Draw(spriteBatch);
                 //System.Diagnostics.Debug.WriteLine("after crew draw");
                 WeaponManager.Draw(spriteBatch);
+
 
 
                 if (multiSelecting == true)
@@ -839,13 +911,18 @@ namespace SpaceIsFun
         /// </summary>
         public void setRoomGridDictionary(int shipUID)
         {
+            
             Ship thisShip = (Ship)ShipManager.RetrieveEntity(shipUID);
+            
 
             Dictionary<int, int> roomGridDict = new Dictionary<int, int>();
-
+            
             foreach (int key in thisShip.RoomUIDList)
             {
                 Room room = (Room)RoomManager.RetrieveEntity(key);
+                
+                // Rebecca's room grids
+                // each room is built with one grid at a time within the grid map
                 switch (room.RoomShape)
                 {
                     // Case for a 2 by 2 room.
@@ -932,6 +1009,8 @@ namespace SpaceIsFun
 
             //return roomGridDict;
             // TODO: possibly un-associate any un-wanted grids with rooms (weirdly-shaped rooms, for example)
+
+            
 
         }
 
@@ -1064,6 +1143,7 @@ namespace SpaceIsFun
         public void setUnwalkableGrids(int shipUID)
         {
             Ship thisShip = (Ship)ShipManager.RetrieveEntity(shipUID);
+            
             for (int i = 0; i < thisShip.ShipGrid.GetLength(0); i++)
             {
                 for (int j = 0; j < thisShip.ShipGrid.GetLength(1); j++)
@@ -1082,6 +1162,7 @@ namespace SpaceIsFun
                     }
                 }
             }
+            
         }
 
         /// <summary>
@@ -1110,6 +1191,7 @@ namespace SpaceIsFun
             return ret;
 
         }
+
 
         public List<int> setCrewDictionary(int shipUID)
         {
@@ -1147,7 +1229,9 @@ namespace SpaceIsFun
 
 
             int mans = 0;
+
             List<int> filledRoomUIDs = new List<int>();
+
             foreach (int i in gridRoomKeys)
             {
                 if (mans == 3)
@@ -1163,13 +1247,17 @@ namespace SpaceIsFun
 
                 CrewToShip[crewUID] = shipUID;
                 CrewToRoom[crewUID] = GridToRoom[i];
+
                 filledRoomUIDs.Add(i);
+
 
                 mans++;
             }
 
 
+
             return filledRoomUIDs;
+
         }
 
         public void setRoomToShipDictionary(int shipUID, List<int> roomUIDs)
@@ -1180,6 +1268,83 @@ namespace SpaceIsFun
             }
 
         }
+
+
+        //For now, just appends current state to save file
+        public void saveState(string fileName)
+        {
+            IFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(fileName, FileMode.Append);
+            formatter.Serialize(stream, stateMachine.CurrentState);
+            stream.Close();
+        }
+
+        public void saveData(string fileName)
+        {
+            IFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(fileName, FileMode.Create);
+            stream.Close();  //This is a bit odd but
+            //Each function appends to the file.  Opening and closing here
+            //just erases the previous file if there was one, and creates a new one.
+            //Closes file so there aren't multiple streams to the same file open.
+
+            saveState(fileName);
+
+            //These dump the dictionary<int, Entity> objects from EntityManager
+            RoomManager.dumpObjects(fileName);
+            GridManager.dumpObjects(fileName);
+            CrewManager.dumpObjects(fileName);
+            WeaponManager.dumpObjects(fileName);
+            ShipManager.dumpObjects(fileName);
+
+            FileStream stream2 = new FileStream(fileName, FileMode.Append);
+            formatter.Serialize(stream2, GridToRoom);
+            formatter.Serialize(stream2, RoomToShip);
+            formatter.Serialize(stream2, WeaponToShip);
+            formatter.Serialize(stream2, CrewToShip);
+            formatter.Serialize(stream2, CrewToRoom);
+            formatter.Serialize(stream2, FilledRooms);
+
+            stream2.Close();
+
+
+        }
+
+        public void loadData(string fileName)
+        {
+            //Load and set currentState in stateMachine
+            //May need to do more
+
+            IFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(fileName, FileMode.Open);
+            State new_CurrentState = (State)formatter.Deserialize(stream);
+            //TODO transition state machine to this state
+            //
+            //
+
+            //Loads "objects" dictionary from save to Entity managers. Keys and Values will be transferred from save file.
+            RoomManager.setObjects((Dictionary<int, Entity>)formatter.Deserialize(stream));
+            GridManager.setObjects((Dictionary<int, Entity>)formatter.Deserialize(stream));
+            CrewManager.setObjects((Dictionary<int, Entity>)formatter.Deserialize(stream));
+            WeaponManager.setObjects((Dictionary<int, Entity>)formatter.Deserialize(stream));
+            ShipManager.setObjects((Dictionary<int, Entity>)formatter.Deserialize(stream));
+
+            Dictionary<int, int> temp;
+            Dictionary<int, bool> temp2;
+            temp = (Dictionary<int, int>)formatter.Deserialize(stream);
+            GridToRoom = new Dictionary<int, int>(temp);
+            temp = (Dictionary<int, int>)formatter.Deserialize(stream);
+            RoomToShip = new Dictionary<int, int>(temp);
+            temp = (Dictionary<int, int>)formatter.Deserialize(stream);
+            WeaponToShip = new Dictionary<int, int>(temp);
+            temp = (Dictionary<int, int>)formatter.Deserialize(stream);
+            CrewToShip = new Dictionary<int, int>(temp);
+            temp = (Dictionary<int, int>)formatter.Deserialize(stream);
+            CrewToRoom = new Dictionary<int, int>(temp);
+            temp2 = (Dictionary<int, bool>)formatter.Deserialize(stream);
+            FilledRooms = new Dictionary<int, bool>(temp2);
+        }
+
 
         public void setFilledDict(int shipUID, List<int> filledRoomUIDs)
         {
@@ -1199,5 +1364,17 @@ namespace SpaceIsFun
 
             }
         }
+        
+        public void dealDamage(int shipUID, int weaponUID)
+        {
+            Ship targetShip = (Ship)ShipManager.RetrieveEntity(shipUID);
+            Weapon targetWeap = (Weapon)WeaponManager.RetrieveEntity(weaponUID);
+
+            //figure out wait time and drawable nonsense
+
+            targetShip.TakeDamage(targetWeap.Damage);
+            System.Diagnostics.Debug.WriteLine("hp after damage: " + targetShip.CurrentHP.ToString());
+        }
+
     }
 }

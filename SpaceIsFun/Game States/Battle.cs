@@ -23,15 +23,20 @@ namespace SpaceIsFun
         int roomUID;
         bool[] roomTypes;
         int weaponUID;
-
+        Weapon selectedWeapon;
+        bool selectedEnemy;
+        Ship name;
         bool multiSelecting = false;
-
         Point selectRectStart = new Point();
         Point selectRectEnd = new Point();
+
+        Ship enemyShip;
 
         List<int> currentEnemyShips = new List<int>();
 
         SoundEffectInstance ThisBattleSong;
+
+        
 
         void setupBattle(int playerUID)
         {
@@ -48,156 +53,15 @@ namespace SpaceIsFun
             bool target1Selected = false;
             bool target2Selected = false;
 
-
-            #region enemyship construction 1
-            if (gameStateUID == 0)
-            {
-                gridUIDs = new List<int>();
-                roomUIDs = new List<int>();
-                weaponUIDs = new List<int>();
-                gridWidth = enemyShipTexture1.Bounds.Width / 32;
-                gridHeight = enemyShipTexture1.Bounds.Height / 32;
-                shipGrid = new int[gridWidth, gridHeight];
-                // grid creation for the player ship
-                for (int i = 0; i < enemyShipTexture1.Bounds.Width / 32; i++)
-                {
-                    // in each column, iterate over the ship sprite's height
-                    for (int j = 0; j < enemyShipTexture1.Bounds.Height / 32; j++)
-                    {
-                        // create a new grid object for i,j
-                        //shipGrid[i, j] = new Grid(gridTexture, highlightTexture, new Vector2(i * 32 + position.X, j * 32 + position.Y), new Vector2(i, j));
-                        Grid toAdd = new Grid(gridSprite, gridHighlightSprite,
-                                   new Vector2(i * 32 + enemyShip1StartPosition.X, j * 32 + enemyShip1StartPosition.Y),
-                                   new Vector2(i, j));
-
-                        int UID = GridManager.AddEntity(toAdd);
-                        gridUIDs.Add(UID);
-                        shipGrid[i, j] = UID;
-                    }
-                }
-
-                roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 3, 1, enemyShip1StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
-                roomUIDs.Add(roomUID);
-                roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 3, 4, enemyShip1StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
-                roomUIDs.Add(roomUID);
-
-                roomTypes = new bool[11];
-
-                for (int i = 0; i < 11; i++)
-                {
-                    roomTypes[i] = false;
-                }
-
-                weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
-                weaponUIDs.Add(weaponUID);
-
-                weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
-                weaponUIDs.Add(weaponUID);
-
-                weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
-                weaponUIDs.Add(weaponUID);
-
-                weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
-                weaponUIDs.Add(weaponUID);
-
-                weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
-                weaponUIDs.Add(weaponUID);
-
-                System.Diagnostics.Debug.WriteLine(weaponUIDs.Count);
-
-
-                enemyShipUID1 = ShipManager.AddEntity(new Ship(enemyShipTexture1, gridSprite, gridHighlightSprite, enemyShip1StartPosition, roomUIDs, gridUIDs, weaponUIDs, roomTypes, shipGrid, 0));
-
-
-                foreach (var item in weaponUIDs)
-                {
-                    WeaponToShip[item] = enemyShipUID1;
-                }
-
-
-                WeaponToShip[weaponUID] = enemyShipUID1;
-                setRoomGridDictionary(enemyShipUID1);
-                setUnwalkableGrids(enemyShipUID1);
-            }
-            #endregion
-
-            #region enemy ship construction 2
-            if (gameStateUID == 2)
-            {
-                //enemyShipStartPosition = new Vector2(400, 50);
-                gridUIDs = new List<int>();
-                roomUIDs = new List<int>();
-                weaponUIDs = new List<int>();
-                gridWidth = enemyShipTexture2.Bounds.Width / 32;
-                gridHeight = enemyShipTexture2.Bounds.Height / 32;
-                shipGrid = new int[gridWidth, gridHeight];
-                // grid creation for the player ship
-                for (int i = 0; i < enemyShipTexture2.Bounds.Width / 32; i++)
-                {
-                    // in each column, iterate over the ship sprite's height
-                    for (int j = 0; j < enemyShipTexture2.Bounds.Height / 32; j++)
-                    {
-                        // create a new grid object for i,j
-                        //shipGrid[i, j] = new Grid(gridTexture, highlightTexture, new Vector2(i * 32 + position.X, j * 32 + position.Y), new Vector2(i, j));
-                        Grid toAdd = new Grid(gridSprite, gridHighlightSprite,
-                                   new Vector2(i * 32 + enemyShip2StartPosition.X, j * 32 + enemyShip2StartPosition.Y),
-                                   new Vector2(i, j));
-
-                        int UID = GridManager.AddEntity(toAdd);
-                        gridUIDs.Add(UID);
-                        shipGrid[i, j] = UID;
-                    }
-                }
-
-                roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 3, 1, enemyShip2StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
-                roomUIDs.Add(roomUID);
-                roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 3, 4, enemyShip2StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
-                roomUIDs.Add(roomUID);
-
-                roomTypes = new bool[11];
-
-                for (int i = 0; i < 11; i++)
-                {
-                    roomTypes[i] = false;
-                }
-
-                weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
-                weaponUIDs.Add(weaponUID);
-
-                weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
-                weaponUIDs.Add(weaponUID);
-
-                weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
-                weaponUIDs.Add(weaponUID);
-
-                weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
-                weaponUIDs.Add(weaponUID);
-
-                weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
-                weaponUIDs.Add(weaponUID);
-
-                System.Diagnostics.Debug.WriteLine(weaponUIDs.Count);
-
-
-                enemyShipUID2 = ShipManager.AddEntity(new Ship(enemyShipTexture2, gridSprite, gridHighlightSprite, enemyShip2StartPosition, roomUIDs, gridUIDs, weaponUIDs, roomTypes, shipGrid, 0));
-
-
-
-                foreach (var item in weaponUIDs)
-                {
-                    WeaponToShip[item] = enemyShipUID2;
-                }
-
-
-                WeaponToShip[weaponUID] = enemyShipUID2;
-                setRoomGridDictionary(enemyShipUID2);
-                setUnwalkableGrids(enemyShipUID2);
-            }
-            #endregion 
-
-            Ship playerShip = (Ship)ShipManager.RetrieveEntity(playerUID);
-            Ship enemyShip;
             
+
+            
+            Ship playerShip = (Ship)ShipManager.RetrieveEntity(playerUID);
+            
+
+            /*
+            enemyShip = (Ship)ShipManager.RetrieveEntity(0);
+
             if (gameStateUID == 0)
             {
                 enemyShip = (Ship)ShipManager.RetrieveEntity(enemyShipUID1);
@@ -209,18 +73,26 @@ namespace SpaceIsFun
                 enemyShip = (Ship)ShipManager.RetrieveEntity(enemyShipUID2);
                 currentEnemyShips.Add(enemyShipUID2);
             }
-            
-            Pathfinder pather = new Pathfinder(playerShip.ShipGrid, playerShipStartPosition ,GridManager);
+            */
+            Pathfinder pather = new Pathfinder(playerShip.ShipGrid, playerShipStartPosition, GridManager);
 
-            
 
             // sets up seven energy bars for the ship
             Panel energy1 = new Panel(4, screenHeight - 256, 40, 256 - 8);
 
             /*Lance's code*/
             Panel Health = new Panel(5, 5, (32 * playerShip.MaxHP) + 8, 72);
-            Panel Shields = new Panel(5, 80, (32 * playerShip.MaxShields)+8, 40);
+            Panel Shields = new Panel(5, 80, (32 * playerShip.MaxShields) + 8, 40);
+
+            Panel enemyHealth = new Panel(screenWidth-((32 * playerShip.MaxHP) + 8), screenHeight - 77, (32 * playerShip.MaxHP) + 8, 72);
+
             /*END Lance's code*/
+            
+            Panel endBattle = new Panel((screenWidth / 2) - (250 / 2), (screenHeight / 2) - (85 / 2), 250, 85);
+            Label endMessageGood = new Label(5,5, "You have defeated the enemy!");
+            Label endMessagebad = new Label(5,5, "You have been defeated!");
+
+            Panel wpnEnable = new Panel(500-(32*5), screenHeight - 128, 416 + 8, 75);
 
             Image energyBar1;
             Image HealthBar;
@@ -229,10 +101,19 @@ namespace SpaceIsFun
             // this list will hold the individual bars within one energy bar
             List<Widget> energyBarTest = new List<Widget>();
             List<Widget> healthBarTest = new List<Widget>();
+            List<Widget> enemyhealthBarTest = new List<Widget>();
             List<Widget> shieldTest = new List<Widget>();
             List<Button> weapons = new List<Button>();
 
+            Button saveDataButton = new Button(1000, 50, 50, "Save Data", (Widget widget) =>
+            {
+                saveData("testytest");
+                saveState("testytest");
+
+            });
+
             int shipStartEnergy = playerShip.Energy;
+            bool gameEnd = false;
 
             Point currentlySelectedPlayerGrid = new Point(-1, -1);
             Point currentlySelectedEnemyGrid = new Point(-1, -1);
@@ -247,6 +128,8 @@ namespace SpaceIsFun
             idleCursor.Transitions.Add(targetWeapon.Name, targetWeapon);
             hasSelectedCrew.Transitions.Add(idleCursor.Name, idleCursor);
             hasSelectedCrew.Transitions.Add(hasSelectedCrew.Name, hasSelectedCrew);
+            targetWeapon.Transitions.Add(idleCursor.Name, idleCursor);
+            targetWeapon.Transitions.Add(hasSelectedCrew.Name, hasSelectedCrew);
 
             cursorState.Start(idleCursor);
 
@@ -292,19 +175,41 @@ namespace SpaceIsFun
 
                 // weapon enabling
 
-               // this panel will hold all the login GUI objects
+                // this panel will hold all the login GUI objects
 
                 //WidgetEvent wpn1click = new WidgetEvent();
-
-                Panel wpnEnable = new Panel(500, screenHeight - 128, 388+8, 75);
+                gui.AddWidget(saveDataButton);
                 gui.AddWidget(wpnEnable);
+                weapons.Clear();
 
+                if(healthBarTest.Count > 0)
+                {
+                    healthBarTest.Clear();
+                }
+
+                if (energyBarTest.Count > 0)
+                {
+                    energyBarTest.Clear();
+                }
+
+                if (enemyhealthBarTest.Count > 0)
+                {
+                    enemyhealthBarTest.Clear();
+                }
+
+                
+
+                /************************************************************************
+                 * Weapon Menu in battle scene:                                         *
+                 * Create a GUI that displayes button per weapon (5 buttons).           *
+                 * 15 buttons in total (5 for Disabled, 5 for Enabled, 5 for Selected). *
+                 ************************************************************************/
                 // Create and add weapon disable buttons
-                Button wpn1Disable = new Button(0, 0, 100, "WPN 1: Disable");
-                Button wpn2Disable = new Button(130, 0, 100, "WPN 2: Disable");
-                Button wpn3Disable = new Button(260, 0, 100, "WPN 3: Disable");
-                Button wpn4Disable = new Button(65, 35, 100, "WPN 4: Disable");
-                Button wpn5Disable = new Button(195, 35, 100, "WPN 5: Disable");
+                Button wpn1Disable = new Button(0, 0, 120, "WPN 1: Disabled");
+                Button wpn2Disable = new Button(139, 0, 120, "WPN 2: Disabled");
+                Button wpn3Disable = new Button(278, 0, 120, "WPN 3: Disabled");
+                Button wpn4Disable = new Button(67, 35, 120, "WPN 4: Disabled");
+                Button wpn5Disable = new Button(207, 35, 120, "WPN 5: Disabled");
                 wpnEnable.AddWidget(wpn1Disable);
                 weapons.Add(wpn1Disable);
                 wpnEnable.AddWidget(wpn2Disable);
@@ -317,11 +222,11 @@ namespace SpaceIsFun
                 weapons.Add(wpn5Disable);
 
                 // Create and add weapon enable buttons
-                Button wpn1Enable = new Button(0, 0, 100, "WPN 1: Enable");
-                Button wpn2Enable = new Button(130, 0, 100, "WPN 2: Enable");
-                Button wpn3Enable = new Button(260, 0, 100, "WPN 3: Enable");
-                Button wpn4Enable = new Button(65, 35, 100, "WPN 4: Enable");
-                Button wpn5Enable = new Button(195, 35, 100, "WPN 5: Enable");
+                Button wpn1Enable = new Button(0, 0, 120, "WPN 1: Enabled");
+                Button wpn2Enable = new Button(140, 0, 120, "WPN 2: Enabled");
+                Button wpn3Enable = new Button(280, 0, 120, "WPN 3: Enabled");
+                Button wpn4Enable = new Button(70, 35, 120, "WPN 4: Enabled");
+                Button wpn5Enable = new Button(210, 35, 120, "WPN 5: Enabled");
                 wpnEnable.AddWidget(wpn1Enable);
                 weapons.Add(wpn1Enable);
                 wpnEnable.AddWidget(wpn2Enable);
@@ -333,59 +238,405 @@ namespace SpaceIsFun
                 wpnEnable.AddWidget(wpn5Enable);
                 weapons.Add(wpn5Enable);
 
-                for (int i = 5; i < 10; i++)
+                // Create and add weapon select buttons
+                Button wpn1Select = new Button(0, 0, 120, "WPN 1: Selected");
+                Button wpn2Select = new Button(140, 0, 120, "WPN 2: Selected");
+                Button wpn3Select = new Button(280, 0, 120, "WPN 3: Selected");
+                Button wpn4Select = new Button(70, 35, 120, "WPN 4: Selected");
+                Button wpn5Select = new Button(210, 35, 120, "WPN 5: Selected");
+                wpnEnable.AddWidget(wpn1Select);
+                weapons.Add(wpn1Select);
+                wpnEnable.AddWidget(wpn2Select);
+                weapons.Add(wpn2Select);
+                wpnEnable.AddWidget(wpn3Select);
+                weapons.Add(wpn3Select);
+                wpnEnable.AddWidget(wpn4Select);
+                weapons.Add(wpn4Select);
+                wpnEnable.AddWidget(wpn5Select);
+                weapons.Add(wpn5Select);
+
+                // Hide Enabled and Selected buttons
+                for (int i = 5; i < 15; i++)
                     weapons[i].Visible = false;
 
-                    //playerShip.WeaponSlots[1];
-                    //WeaponManager.
+                //playerShip.WeaponSlots[1];
+                //WeaponManager.
 
 
-                    // Rebecca's code end
+                // Rebecca's code end
 
 
                 // adds all the energy bars to the gui
                 gui.AddWidget(energy1);
+
                 /*Lance's*/
                 gui.AddWidget(Health);
                 gui.AddWidget(Shields);
 
-
-
-                Texture2D HB;
-                if (playerShip.CurrentHP > 3)
-                    for (int i = 0; i < 3; i++)
-                    {
-                        HB = healthBarLow; // red healthbar
-                        Health.AddWidget(HealthBar = new Image(32 * i, 0, HB));
-                        healthBarTest.Add(HealthBar);
-                    }
-                if (playerShip.CurrentHP > 6)
-                    for (int i = 0; i < 6; i++)
-                    {
-                        HB = healthBarMed; // orange healthbar
-                        Health.AddWidget(HealthBar = new Image(32 * i, 0, HB));
-                        healthBarTest.Add(HealthBar);
-                    }
-                for (int i = 0; i < playerShip.CurrentHP; i++)
+                /*create the health bar:
+                 *first add the 3 red bars
+                 *second add the 6 orange bars
+                 *  (3 over the red bars)
+                 *third add the 10 green bars
+                 *  (6 over the orange)
+                 *      (3 over the red as well)
+                 *finally make any bars more over the starting
+                 * health of the ship invisible
+                 */
+                for (int i = 0; i < 3; i++)
                 {
-                    HB = healthBarFull; // green healthbar
-                    Health.AddWidget(HealthBar = new Image(32 * i, 0, HB));
+                    // red healthbar
+                    Health.AddWidget(HealthBar = new Image(32 * i, 0, healthBarLow));
+                    healthBarTest.Add(HealthBar);
+                }
+                for (int i = 0; i < 6; i++)
+                {
+                    // orange healthbar
+                    Health.AddWidget(HealthBar = new Image(32 * i, 0, healthBarMed));
+                    healthBarTest.Add(HealthBar);
+                }
+                for (int i = 0; i < playerShip.MaxHP; i++)
+                {
+                    // green healthbar
+                    Health.AddWidget(HealthBar = new Image(32 * i, 0, healthBarFull));
                     healthBarTest.Add(HealthBar);
                 }
 
+                int j = 0;
+                for (int i = 0; i < 19; i++)
+                {
+                    if (playerShip.CurrentHP > 6)
+                        j = 9;
+                    else if (playerShip.CurrentHP > 3)
+                        j = 3;
+                    else
+                        j = 0;
+
+                    if (i >= playerShip.CurrentHP + j)
+                    {
+                        healthBarTest[i].Visible = false;
+                    }
+                }
+                
+
                 for (int i = 0; i < playerShip.CurrentShields; i++)
                 {
-                    Shields.AddWidget(sBubble = new Image(32*i, 0, shieldBubble));
+                    Shields.AddWidget(sBubble = new Image(32 * i, 0, shieldBubble));
                     shieldTest.Add(sBubble);
                 }
-                    /*END Lance's*/
+                /*END Lance's*/
 
-                    // add as many energy widgets as there is ship energy to one entire energy bar
-                    for (int i = 0; i < playerShip.Energy; i++)
+                // add as many energy widgets as there is ship energy to one entire energy bar
+                for (int i = 0; i < playerShip.Energy; i++)
+                {
+                    energy1.AddWidget(energyBar1 = new Image(0, (256 - 16 - 8 - 8) - i * 16, energyBarSprite));
+                    energyBarTest.Add(energyBar1);
+                }
+
+                #region enemyship construction 1
+                if (gameStateUID == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("in state 0");
+                    gridUIDs = new List<int>();
+                    roomUIDs = new List<int>();
+                    weaponUIDs = new List<int>();
+                    gridWidth = enemyShipTexture1.Bounds.Width / 32;
+                    gridHeight = enemyShipTexture1.Bounds.Height / 32;
+                    shipGrid = new int[gridWidth, gridHeight];
+                    // grid creation for the player ship
+                    for (int i = 0; i < enemyShipTexture1.Bounds.Width / 32; i++)
                     {
-                        energy1.AddWidget(energyBar1 = new Image(0, (256 - 16 - 8 - 8) - i * 16, energyBarSprite));
-                        energyBarTest.Add(energyBar1);
+                        // in each column, iterate over the ship sprite's height
+                        for (j = 0; j < enemyShipTexture1.Bounds.Height / 32; j++)
+                        {
+                            // create a new grid object for i,j
+                            //shipGrid[i, j] = new Grid(gridTexture, highlightTexture, new Vector2(i * 32 + position.X, j * 32 + position.Y), new Vector2(i, j));
+                            Grid toAdd = new Grid(gridSprite, gridHighlightSprite,
+                                       new Vector2(i * 32 + enemyShip1StartPosition.X, j * 32 + enemyShip1StartPosition.Y),
+                                       new Vector2(i, j));
+
+                            int UID = GridManager.AddEntity(toAdd);
+                            gridUIDs.Add(UID);
+                            shipGrid[i, j] = UID;
+                        }
                     }
+
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 3, 3, enemyShip1StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 5, 3, enemyShip1StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 7, 2, enemyShip1StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 7, 4, enemyShip1StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 9, 2, enemyShip1StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 9, 4, enemyShip1StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 11, 1, enemyShip1StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 11, 3, enemyShip1StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 11, 5, enemyShip1StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+
+                    roomTypes = new bool[11];
+
+                    for (int i = 0; i < 11; i++)
+                    {
+                        roomTypes[i] = false;
+                    }
+
+                    weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+                    weaponUIDs.Add(weaponUID);
+
+                    weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+                    weaponUIDs.Add(weaponUID);
+
+                    weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+                    weaponUIDs.Add(weaponUID);
+
+                    weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+                    weaponUIDs.Add(weaponUID);
+
+                    weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+                    weaponUIDs.Add(weaponUID);
+
+                    System.Diagnostics.Debug.WriteLine(weaponUIDs.Count);
+
+
+                    enemyShipUID1 = ShipManager.AddEntity(new Ship(enemyShipTexture1, gridSprite, gridHighlightSprite, enemyShip1StartPosition, roomUIDs, gridUIDs, weaponUIDs, roomTypes, shipGrid, 0));
+                    enemyShip = (Ship)ShipManager.RetrieveEntity(enemyShipUID1);
+
+
+                    #region enemy health bars
+
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        // red healthbar
+                        enemyHealth.AddWidget(HealthBar = new Image(32 * i, 0, healthBarLow));
+                        enemyhealthBarTest.Add(HealthBar);
+                    }
+                    for (int i = 0; i < 6; i++)
+                    {
+                        // orange healthbar
+                        enemyHealth.AddWidget(HealthBar = new Image(32 * i, 0, healthBarMed));
+                        enemyhealthBarTest.Add(HealthBar);
+                    }
+                    for (int i = 0; i < playerShip.MaxHP; i++)
+                    {
+                        // green healthbar
+                        enemyHealth.AddWidget(HealthBar = new Image(32 * i, 0, healthBarFull));
+                        enemyhealthBarTest.Add(HealthBar);
+                    }
+
+                    j = 0;
+                    for (int i = 0; i < 19; i++)
+                    {
+                        if (enemyShip.CurrentHP > 6)
+                            j = 9;
+                        else if (enemyShip.CurrentHP > 3)
+                            j = 3;
+                        else
+                            j = 0;
+
+=======
+
+                    #region enemy health bars
+
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        // red healthbar
+                        enemyHealth.AddWidget(HealthBar = new Image(32 * i, 0, healthBarLow));
+                        enemyhealthBarTest.Add(HealthBar);
+                    }
+                    for (int i = 0; i < 6; i++)
+                    {
+                        // orange healthbar
+                        enemyHealth.AddWidget(HealthBar = new Image(32 * i, 0, healthBarMed));
+                        enemyhealthBarTest.Add(HealthBar);
+                    }
+                    for (int i = 0; i < playerShip.MaxHP; i++)
+                    {
+                        // green healthbar
+                        enemyHealth.AddWidget(HealthBar = new Image(32 * i, 0, healthBarFull));
+                        enemyhealthBarTest.Add(HealthBar);
+                    }
+
+                    j = 0;
+                    for (int i = 0; i < 19; i++)
+                    {
+                        if (enemyShip.CurrentHP > 6)
+                            j = 9;
+                        else if (enemyShip.CurrentHP > 3)
+                            j = 3;
+                        else
+                            j = 0;
+
+>>>>>>> 7088aa4524ecda21e16c2b4da509023775d904ef
+                        if (i >= enemyShip.CurrentHP + j)
+                        {
+                            enemyhealthBarTest[i].Visible = false;
+                        }
+                    }
+
+                    #endregion
+
+                    foreach (var item in weaponUIDs)
+                    {
+                        WeaponToShip[item] = enemyShipUID1;
+                    }
+
+
+                    WeaponToShip[weaponUID] = enemyShipUID1;
+                    setRoomToShipDictionary(enemyShipUID1, roomUIDs);
+                    setRoomGridDictionary(enemyShipUID1);
+                    setUnwalkableGrids(enemyShipUID1);
+                }
+                #endregion
+
+                #region enemy ship construction 2
+
+                if (gameStateUID == 2)
+                {
+
+                    System.Diagnostics.Debug.WriteLine("in state 2");
+                    //enemyShipStartPosition = new Vector2(400, 50);
+                    gridUIDs = new List<int>();
+                    roomUIDs = new List<int>();
+                    weaponUIDs = new List<int>();
+                    gridWidth = enemyShipTexture2.Bounds.Width / 32;
+                    gridHeight = enemyShipTexture2.Bounds.Height / 32;
+                    shipGrid = new int[gridWidth, gridHeight];
+                    // grid creation for the player ship
+                    for (int i = 0; i < enemyShipTexture2.Bounds.Width / 32; i++)
+                    {
+                        // in each column, iterate over the ship sprite's height
+                        for (j = 0; j < enemyShipTexture2.Bounds.Height / 32; j++)
+                        {
+                            // create a new grid object for i,j
+                            //shipGrid[i, j] = new Grid(gridTexture, highlightTexture, new Vector2(i * 32 + position.X, j * 32 + position.Y), new Vector2(i, j));
+                            Grid toAdd = new Grid(gridSprite, gridHighlightSprite,
+                                       new Vector2(i * 32 + enemyShip2StartPosition.X, j * 32 + enemyShip2StartPosition.Y),
+                                       new Vector2(i, j));
+
+                            int UID = GridManager.AddEntity(toAdd);
+                            gridUIDs.Add(UID);
+                            shipGrid[i, j] = UID;
+                        }
+                    }
+
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 3, 3, enemyShip2StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 5, 3, enemyShip2StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 7, 2, enemyShip2StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 7, 4, enemyShip2StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 9, 2, enemyShip2StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 9, 4, enemyShip2StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 11, 1, enemyShip2StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 11, 3, enemyShip2StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+                    roomUID = RoomManager.AddEntity(new Room(roomHighlightSprite, roomHighlightSprite, 11, 5, enemyShip2StartPosition, Globals.roomShape.TwoXTwo, Globals.roomType.EMPTY_ROOM, 2, 2));
+                    roomUIDs.Add(roomUID);
+
+                    roomTypes = new bool[11];
+
+                    for (int i = 0; i < 11; i++)
+                    {
+                        roomTypes[i] = false;
+                    }
+
+                    weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+                    weaponUIDs.Add(weaponUID);
+
+                    weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+                    weaponUIDs.Add(weaponUID);
+
+                    weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+                    weaponUIDs.Add(weaponUID);
+
+                    weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+                    weaponUIDs.Add(weaponUID);
+
+                    weaponUID = WeaponManager.AddEntity(new Weapon(gridSprite, 0, 0, 10, 500, 3));
+                    weaponUIDs.Add(weaponUID);
+
+                    System.Diagnostics.Debug.WriteLine(weaponUIDs.Count);
+
+
+                    enemyShipUID2 = ShipManager.AddEntity(new Ship(enemyShipTexture2, gridSprite, gridHighlightSprite, enemyShip2StartPosition, roomUIDs, gridUIDs, weaponUIDs, roomTypes, shipGrid, 0));
+                    enemyShip = (Ship)ShipManager.RetrieveEntity(enemyShipUID2);
+
+
+                    #region enemy health bars
+
+
+=======
+
+                    #region enemy health bars
+
+
+>>>>>>> 7088aa4524ecda21e16c2b4da509023775d904ef
+                    for (int i = 0; i < 3; i++)
+                    {
+                        // red healthbar
+                        enemyHealth.AddWidget(HealthBar = new Image(32 * i, 0, healthBarLow));
+                        enemyhealthBarTest.Add(HealthBar);
+                    }
+                    for (int i = 0; i < 6; i++)
+                    {
+                        // orange healthbar
+                        enemyHealth.AddWidget(HealthBar = new Image(32 * i, 0, healthBarMed));
+                        enemyhealthBarTest.Add(HealthBar);
+                    }
+                    for (int i = 0; i < playerShip.MaxHP; i++)
+                    {
+                        // green healthbar
+                        enemyHealth.AddWidget(HealthBar = new Image(32 * i, 0, healthBarFull));
+                        enemyhealthBarTest.Add(HealthBar);
+                    }
+
+                    j = 0;
+                    for (int i = 0; i < 19; i++)
+                    {
+                        if (enemyShip.CurrentHP > 6)
+                            j = 9;
+                        else if (enemyShip.CurrentHP > 3)
+                            j = 3;
+                        else
+                            j = 0;
+
+                        if (i >= enemyShip.CurrentHP + j)
+                        {
+                            enemyhealthBarTest[i].Visible = false;
+                        }
+                    }
+
+                    #endregion
+
+
+                    foreach (var item in weaponUIDs)
+                    {
+                        WeaponToShip[item] = enemyShipUID2;
+                    }
+
+
+                    WeaponToShip[weaponUID] = enemyShipUID2;
+                    setRoomToShipDictionary(enemyShipUID2, roomUIDs);
+                    setRoomGridDictionary(enemyShipUID2);
+                    setUnwalkableGrids(enemyShipUID2);
+                }
+                #endregion 
+
+                gui.AddWidget(enemyHealth);
 
                 
             };
@@ -395,44 +646,144 @@ namespace SpaceIsFun
             #region battle state update
             battle.update += (GameTime gameTime) =>
             {
+
+                #region check for enemy death
+
+                if (enemyShip.CurrentHP <= 0 && gameEnd == false)
+                {
+
+                    gameEnd = true;
+                    endBattle.AddWidget(endMessageGood);
+
+                    endBattle.AddWidget(new Button((250/2)-35, 85-45, "Next>>", 2, (Widget widget) =>
+                    {
+                        // instead of going to a battle, go to an overworld instead
+                        //stateMachine.Transition(overworld.Name);
+                        stateMachine.Transition(overworld.Name);
+
+                    }));
+
+                    gui.AddWidget(endBattle);
+                    battle1Result = true;
+                    masterGameEnd = true;
+                }
+
+                #endregion
+
+                #region weapon gui update
+
+                if (weapon1Disabled == true)
+                {
+                    weapons[0].Visible = true;
+                    weapons[5].Visible = false;
+                    weapons[10].Visible = false;
+                }
+                else if (weapon1Enabled == true)
+                {
+                    weapons[0].Visible = false;
+                    weapons[5].Visible = true;
+                    weapons[10].Visible = false;
+                }
+                else if (weapon1Selected == true)
+                {
+                    weapons[0].Visible = false;
+                    weapons[5].Visible = false;
+                    weapons[10].Visible = true;
+                }
+
+                if (weapon2Disabled == true)
+                {
+                    weapons[1].Visible = true;
+                    weapons[6].Visible = false;
+                    weapons[11].Visible = false;
+                }
+                else if (weapon2Enabled == true)
+                {
+                    weapons[1].Visible = false;
+                    weapons[6].Visible = true;
+                    weapons[11].Visible = false;
+                }
+                else if (weapon2Selected == true)
+                {
+                    weapons[1].Visible = false;
+                    weapons[6].Visible = false;
+                    weapons[11].Visible = true;
+                }
+
+                if (weapon3Disabled == true)
+                {
+                    weapons[2].Visible = true;
+                    weapons[7].Visible = false;
+                    weapons[12].Visible = false;
+                }
+                else if (weapon3Enabled == true)
+                {
+                    weapons[2].Visible = false;
+                    weapons[7].Visible = true;
+                    weapons[12].Visible = false;
+                }
+                else if (weapon3Selected == true)
+                {
+                    weapons[2].Visible = false;
+                    weapons[7].Visible = false;
+                    weapons[12].Visible = true;
+                }
+
+                if (weapon4Disabled == true)
+                {
+                    weapons[3].Visible = true;
+                    weapons[8].Visible = false;
+                    weapons[13].Visible = false;
+                }
+                else if (weapon4Enabled == true)
+                {
+                    weapons[3].Visible = false;
+                    weapons[8].Visible = true;
+                    weapons[13].Visible = false;
+
+                }
+                else if (weapon4Selected == true)
+                {
+                    weapons[3].Visible = false;
+                    weapons[8].Visible = false;
+                    weapons[13].Visible = true;
+                }
+
+                if (weapon5Disabled == true)
+                {
+                    weapons[4].Visible = true;
+                    weapons[9].Visible = false;
+                    weapons[14].Visible = false;
+                }
+                else if (weapon5Enabled == true)
+                {
+                    weapons[4].Visible = false;
+                    weapons[9].Visible = true;
+                    weapons[14].Visible = false;
+                }
+                else if (weapon5Selected == true)
+                {
+                    weapons[4].Visible = false;
+                    weapons[9].Visible = false;
+                    weapons[14].Visible = true;
+                }
+
+                #endregion
+
+
+
                 #region input handling
 
                 #region keys
 
-                Ship thisShip = (Ship)ShipManager.RetrieveEntity(0);
 
-                if (currentKeyState.IsKeyDown(Keys.T) && previousKeyState.IsKeyUp(Keys.T))
-                {
-                    Crew man = (Crew)CrewManager.RetrieveEntity(0);
-
-                    pather = new Pathfinder(thisShip.ShipGrid, playerShipStartPosition, GridManager);
-
-                    Grid thisGrid = (Grid)GridManager.RetrieveEntity(9);
-
-                    target1 = man.Position;
-
-                    thisGrid = (Grid)GridManager.RetrieveEntity(26);
-
-                    target2 = thisGrid.GridPosition;
-
-                    List<Vector2> path = pather.FindOptimalPath(target1, target2);
-
-                    foreach (Vector2 item in path)
-                    {
-                        Vector2 dumb = new Vector2((item.X / 32), (item.Y / 32));
-
-                        System.Diagnostics.Debug.WriteLine(dumb.ToString());
-                    }
-
-                    man.Move(path);
-                }
-
+                /*
                 // if the a key is pressed, transition back to the menu
                 if (currentKeyState.IsKeyDown(Keys.A))
                 {
                     stateMachine.Transition(startMenu.Name);
                 }
-
+                */
                 /*if (currentKeyState.IsKeyDown(Keys.D1) && previousKeyState.IsKeyUp(Keys.D1))
                 {
                     Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[0]);
@@ -636,6 +987,7 @@ namespace SpaceIsFun
                     {
                         System.Diagnostics.Debug.WriteLine("gained energy!");
                         playerShip.Energy = playerShip.Energy + 1;
+                        
                     }
 
                     // iterate over the energy widgets for the first energy bar, and make the one above the current level visible again
@@ -657,18 +1009,46 @@ namespace SpaceIsFun
                     {
                         System.Diagnostics.Debug.WriteLine("gained health!");
                         playerShip.CurrentHP = playerShip.CurrentHP + 1;
+                        
                     }
 
+                    /*if (playerShip.CurrentHP > 6)
+                        healthBarFull = Content.Load<Texture2D>("healthBarFull");
+                    else if (playerShip.CurrentHP > 3)
+                        healthBarFull = Content.Load<Texture2D>("healthBarMed");
+                    else
+                        healthBarFull = Content.Load<Texture2D>("healthBarLow");
+
+                    for (int i = 0; i < playerShip.MaxHP; i++)
+                    {
+                        if (i < playerShip.CurrentHP)
+                        {
+                            energyBarTest[i].Visible = true;
+                        }
+                    }*/
+
                     int j = 0;
+                    /*
+                     * there are 19 bars
+                     * 0 - 3   : red
+                     * 4 - 9   : orange
+                     * 10 - 19 : green
+                     */
                     for (int i = 0; i < 19; i++)
                     {
                         if (playerShip.CurrentHP > 6)
                             j = 9;
+                            // we are still in green 
+                            //don't worry about orange(6) and yellow(3)
                         else if (playerShip.CurrentHP > 3)
                             j = 3;
+                            //we are in orange 
+                            //don't worry about red(3)
                         else
-                            j = 0; 
-                        
+                            j = 0;
+
+                            //we are in red, hp and bars finally line up
+
                         if (i < playerShip.CurrentHP + j)
                         {
                             healthBarTest[i].Visible = true;
@@ -684,17 +1064,30 @@ namespace SpaceIsFun
                     {
                         System.Diagnostics.Debug.WriteLine("lost health!");
                         playerShip.CurrentHP = playerShip.CurrentHP - 1;
+                        
                     }
 
                     int j = 0;
+                    /*
+                     * there are 19 bars
+                     * 0 - 3   : red
+                     * 4 - 9   : orange
+                     * 10 - 19 : green
+                     */
                     for (int i = 0; i < 19; i++)
                     {
                         if (playerShip.CurrentHP > 6)
+
                             j = 9; 
+                            // we are still in green 
+                            //don't worry about orange(6) and yellow(3)
                         else if (playerShip.CurrentHP > 3)
                             j = 3;
+                            //we are in orange 
+                            //don't worry about red(3) 
                         else
                             j = 0;
+                            //we are in red, hp and bars finally line up
 
                         if (i >= playerShip.CurrentHP + j)
                         {
@@ -713,7 +1106,7 @@ namespace SpaceIsFun
                         playerShip.CurrentShields = playerShip.CurrentShields - 1;
                     }
                     for (int i = 0; i < playerShip.MaxShields; i++)
-                        if(i >= playerShip.CurrentShields)
+                        if (i >= playerShip.CurrentShields)
                             shieldTest[i].Visible = false;
                 }
                 #endregion
@@ -727,40 +1120,84 @@ namespace SpaceIsFun
                         playerShip.CurrentShields = playerShip.CurrentShields + 1;
                     }
                     for (int i = 0; i < playerShip.MaxShields; i++)
-                        if(i < playerShip.CurrentShields)
+                        if (i < playerShip.CurrentShields)
                             shieldTest[i].Visible = true;
                 }
+                #endregion
+
+                // Rebecca's code
+
+                #region weapon keys
+                // For each numeric key press (D1-D5), weapons are enabled and selected.
+                // Initially, all weapons are Disabled.
+                // When numeric key is pressed, the corresponding weapon is Enabled and starts charging
+                // When numeric key is pressed again, the corresponding weapon is Selected and waits for a target to be selected
+                // Every numeric key press after that switches back and forth between Enabled and Selected
+
+                #region setting gui according to weapon states
+<<<<<<< HEAD
+                
+
+                
+
+=======
+                
+
+                
+
+>>>>>>> 7088aa4524ecda21e16c2b4da509023775d904ef
                 #endregion
 
                 #region keys.1
                 if (currentKeyState.IsKeyDown(Keys.D1) == true && previousKeyState.IsKeyUp(Keys.D1) == true)
                 {
+                    Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[0]);
+                    
+                    /*
                     int num = 0;
-                    if (weapons[num].Visible)
+                    if (weapons[num].Visible || weapons[num + 10].Visible)
                     {
                         // enable weapon 1
-                        weapons[num].Visible = false;
-                        weapons[num+5].Visible = true;
+                        weapons[num].Visible = false;//weapon disabled
+                        weapons[num + 5].Visible = true;//weapon enabled
+                        weapons[num + 10].Visible = false;//weapon selected
                     }
                     else
                     {
-                        // disable weapon 1
-                        weapons[num].Visible = true;
-                        weapons[num + 5].Visible = false;
+                        // select weapon 1
+                        weapons[num].Visible = false;//weapon disabled
+                        weapons[num + 5].Visible = false;//weapon enabled
+                        weapons[num + 10].Visible = true;//weapon selected
                     }
+                    */
 
-                    Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[num]);
+                    //Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[0]);
 
                     // if weapon 1 is currently disabled
                     if (thisWeapon.weaponStateMachine.CurrentState.Name == "disabled")
                     {
+
+                        weapon1Enabled = true;
+                        weapon1Selected = false;
+                        weapon1Disabled = false;
+
                         thisWeapon.start_charging();
                     }
 
                     // if weapon 1 is charging
-                    else if (thisWeapon.weaponStateMachine.CurrentState.Name == "charging")
+                    else if (thisWeapon.weaponStateMachine.CurrentState.Name == "ready")
                     {
+                        
+                        
                         // go to target weapon state, try to assign target
+                        if (cursorState.CurrentState.Name == "idleCursor")
+                        {
+
+                            weaponSlotsIndex = 0;
+                            cursorState.Transition("targetWeapon");
+                        }
+
+                        
                     }
                 }
                 #endregion
@@ -768,30 +1205,32 @@ namespace SpaceIsFun
                 #region keys.2
                 if (currentKeyState.IsKeyDown(Keys.D2) == true && previousKeyState.IsKeyUp(Keys.D2) == true)
                 {
-                    int num = 1;
-                    if (weapons[num].Visible)
-                    {
-                        weapons[num].Visible = false;
-                        weapons[num + 5].Visible = true;
-                    }
-                    else
-                    {
-                        weapons[num].Visible = true;
-                        weapons[num + 5].Visible = false;
-                    }
-
-                    Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[num]);
-
-                    // if weapon 2 is currently disabled
+                    Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[1]);
+                    
                     if (thisWeapon.weaponStateMachine.CurrentState.Name == "disabled")
                     {
+
+                        weapon2Enabled = true;
+                        weapon2Selected = false;
+                        weapon2Disabled = false;
+
                         thisWeapon.start_charging();
                     }
 
-                    // if weapon 2 is charging
-                    else if (thisWeapon.weaponStateMachine.CurrentState.Name == "charging")
+                    // if weapon 1 is charging
+                    else if (thisWeapon.weaponStateMachine.CurrentState.Name == "ready")
                     {
+
+
                         // go to target weapon state, try to assign target
+                        if (cursorState.CurrentState.Name == "idleCursor")
+                        {
+
+                            weaponSlotsIndex = 1;
+                            cursorState.Transition("targetWeapon");
+                        }
+
+
                     }
                 }
                 #endregion
@@ -799,30 +1238,32 @@ namespace SpaceIsFun
                 #region keys.3
                 if (currentKeyState.IsKeyDown(Keys.D3) == true && previousKeyState.IsKeyUp(Keys.D3) == true)
                 {
-                    int num = 2;
-                    if (weapons[num].Visible)
-                    {
-                        weapons[num].Visible = false;
-                        weapons[num + 5].Visible = true;
-                    }
-                    else
-                    {
-                        weapons[num].Visible = true;
-                        weapons[num + 5].Visible = false;
-                    }
-
-                    Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[num]);
-
-                    // if weapon 3 is currently disabled
+                    Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[2]);
+                    
                     if (thisWeapon.weaponStateMachine.CurrentState.Name == "disabled")
                     {
+
+                        weapon3Enabled = true;
+                        weapon3Selected = false;
+                        weapon3Disabled = false;
+
                         thisWeapon.start_charging();
                     }
 
-                    // if weapon 3 is charging
-                    else if (thisWeapon.weaponStateMachine.CurrentState.Name == "charging")
+                    // if weapon 1 is charging
+                    else if (thisWeapon.weaponStateMachine.CurrentState.Name == "ready")
                     {
+
+
                         // go to target weapon state, try to assign target
+                        if (cursorState.CurrentState.Name == "idleCursor")
+                        {
+
+                            weaponSlotsIndex = 2;
+                            cursorState.Transition("targetWeapon");
+                        }
+
+
                     }
                 }
                 #endregion
@@ -830,30 +1271,32 @@ namespace SpaceIsFun
                 #region keys.4
                 if (currentKeyState.IsKeyDown(Keys.D4) == true && previousKeyState.IsKeyUp(Keys.D4) == true)
                 {
-                    int num = 3;
-                    if (weapons[num].Visible)
-                    {
-                        weapons[num].Visible = false;
-                        weapons[num + 5].Visible = true;
-                    }
-                    else
-                    {
-                        weapons[num].Visible = true;
-                        weapons[num + 5].Visible = false;
-                    };
-
-                    Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[num]);
-
-                    // if weapon 4 is currently disabled
+                    Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[3]);
+                    
                     if (thisWeapon.weaponStateMachine.CurrentState.Name == "disabled")
                     {
+
+                        weapon4Enabled = true;
+                        weapon4Selected = false;
+                        weapon4Disabled = false;
+
                         thisWeapon.start_charging();
                     }
 
-                    // if weapon 4 is charging
-                    else if (thisWeapon.weaponStateMachine.CurrentState.Name == "charging")
+                     // if weapon 1 is charging
+                    else if (thisWeapon.weaponStateMachine.CurrentState.Name == "ready")
                     {
+
+
                         // go to target weapon state, try to assign target
+                        if (cursorState.CurrentState.Name == "idleCursor")
+                        {
+
+                            weaponSlotsIndex = 3;
+                            cursorState.Transition("targetWeapon");
+                        }
+
+
                     }
                 }
                 #endregion
@@ -861,34 +1304,41 @@ namespace SpaceIsFun
                 #region keys.5
                 if (currentKeyState.IsKeyDown(Keys.D5) == true && previousKeyState.IsKeyUp(Keys.D5) == true)
                 {
-                    int num = 4;
-                    if (weapons[num].Visible)
-                    {
-                        weapons[num].Visible = false;
-                        weapons[num + 5].Visible = true;
-                    }
-                    else
-                    {
-                        weapons[num].Visible = true;
-                        weapons[num + 5].Visible = false;
-                    }
-
-                    Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[num]);
-
-                    // if weapon 5 is currently disabled
+                    Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[4]);
+                    
                     if (thisWeapon.weaponStateMachine.CurrentState.Name == "disabled")
                     {
+
+                        weapon4Enabled = true;
+                        weapon4Selected = false;
+                        weapon4Disabled = false;
+
                         thisWeapon.start_charging();
                     }
 
-                    // if weapon 5 is charging
-                    else if (thisWeapon.weaponStateMachine.CurrentState.Name == "charging")
+                     // if weapon 1 is charging
+                    else if (thisWeapon.weaponStateMachine.CurrentState.Name == "ready")
                     {
+
+
                         // go to target weapon state, try to assign target
+                        if (cursorState.CurrentState.Name == "idleCursor")
+                        {
+
+                            weaponSlotsIndex = 4;
+                            cursorState.Transition("targetWeapon");
+                        }
+
+
                     }
                 }
                 #endregion
 
+                #endregion
+
+                
+
+                // end Rebecca's code
 
 
                 #region weapons testing: keys.y, keys.u
@@ -929,7 +1379,7 @@ namespace SpaceIsFun
 
                 #endregion
                 #endregion
-            #endregion
+            
 
                 ShipManager.Update(gameTime);
                 GridManager.Update(gameTime);
@@ -940,7 +1390,7 @@ namespace SpaceIsFun
                 cursorState.Update(gameTime);
 
             };
-
+            #endregion
 
             // when leaving the battle state
             #region battle state leave
@@ -951,12 +1401,14 @@ namespace SpaceIsFun
                 // tear down gui elements
 
                 // remove the energy widgets from the gui
-                gui.RemoveWidget(energy1);
+                
 
-                foreach (int UID in currentEnemyShips)
-                {
-                    ShipManager.DeleteEntity(UID);
-                }
+                gui.RemoveWidget(energy1);
+                gui.RemoveWidget(Health);
+                gui.RemoveWidget(wpnEnable);
+                gui.RemoveWidget(Shields);
+                gui.RemoveWidget(saveDataButton);
+                gui.RemoveWidget(endBattle);
             };
             #endregion
             #endregion
@@ -970,8 +1422,8 @@ namespace SpaceIsFun
             {
                 #region input handling
 
-                
 
+                
                 #region mouse
 
                 #region left click
@@ -1022,13 +1474,17 @@ namespace SpaceIsFun
                         System.Diagnostics.Debug.WriteLine("x1, y1 {0},{1}", x1, y1);
                         System.Diagnostics.Debug.WriteLine("x2, y2 {0},{1}", x2, y2);
 
+
+
+                        System.Diagnostics.Debug.WriteLine("Amount of rooms: "+RoomManager.RetrieveKeys().Count.ToString());   
+
                         for (int i = x1; i <= x2; i++)
                         {
                             for (int j = y1; j <= y2; j++)
                             {
                                 System.Diagnostics.Debug.WriteLine("Selected Grid {0},{1}", i, j);
-                                
-                                Vector2 blah = new Vector2(i,j);
+
+                                Vector2 blah = new Vector2(i, j);
                                 foreach (int x in GridManager.RetrieveKeys())
                                 {
                                     Grid grid = (Grid)GridManager.RetrieveEntity(x);
@@ -1037,9 +1493,12 @@ namespace SpaceIsFun
                                     {
                                         System.Diagnostics.Debug.WriteLine("Filled: " + FilledRooms[x].ToString());
                                         System.Diagnostics.Debug.WriteLine("Walkable: " + grid.IsWalkable.ToString());
+                                        
                                         break;
                                     }
                                 }
+
+                                
 
                                 /*for (i = 0; i < playerShip.ShipGrid.GetLength(0); i++)
                                 {
@@ -1053,8 +1512,8 @@ namespace SpaceIsFun
 
                                 }*/
 
-                                
-                                
+
+
 
                                 var crewMembers = CrewManager.RetrieveKeys();
 
@@ -1154,9 +1613,6 @@ namespace SpaceIsFun
             {
                 #region input handling
 
-                
-
-
                 #region mouse
 
                 if (previousMouseState.LeftButton == ButtonState.Released && currentMouseState.LeftButton == ButtonState.Pressed)
@@ -1165,7 +1621,7 @@ namespace SpaceIsFun
 
                     //deselect the crew, go to idlecursor
 
-                    
+
 
                     selectedCrewMembers.Clear();
                     cursorState.Transition(idleCursor.Name);
@@ -1188,12 +1644,12 @@ namespace SpaceIsFun
                         // transition to idle cursor on success
 
                         // todo: room-filling algorithm
-                     
 
-                        if(checkShipHover(currentMouseState) == playerShipUID)
+
+                        if (checkShipHover(currentMouseState) == playerShipUID)
                         {
                             Vector2 targetGridVector = getGridHover(currentMouseState, playerShipUID);
-                            
+
 
                             //System.Diagnostics.Debug.WriteLine("target grid: "+targetGrid);
 
@@ -1249,13 +1705,13 @@ namespace SpaceIsFun
 
                         }
 
-                    
+
 
                     }
 
                     else
                     {
-                    // we got more than one man
+                        // we got more than one man
 
                         // did we click on a room on our ship?
                         if (checkShipHover(currentMouseState) == playerShipUID)
@@ -1268,9 +1724,9 @@ namespace SpaceIsFun
 
                                 // loop through CrewToRoom, count any hits in the values; if count is less than or equal to the room's size then continue
                                 int count = 0;
-                                foreach (var item in CrewToRoom.Values)
+                                foreach (var item in CrewToRoom.Keys)
                                 {
-                                    if (thisRoomUID == item)
+                                    if (thisRoomUID == CrewToRoom[item] && selectedCrewMembers.Contains(item) == false)
                                     {
                                         count++;
                                     }
@@ -1289,19 +1745,19 @@ namespace SpaceIsFun
                                         if (thisRoomUID == GridToRoom[item])
                                         {
                                             theGrids.Add(item);
-                                            
+
                                         }
-                                        
+
                                     }
                                     //add their positions to a list
                                     List<Tuple<int, int>> gridPositions = new List<Tuple<int, int>>();
                                     foreach (var item in theGrids)
                                     {
-                                        Grid gridInRoom = (Grid)GridManager.RetrieveEntity(item); 
+                                        Grid gridInRoom = (Grid)GridManager.RetrieveEntity(item);
                                         //System.Diagnostics.Debug.WriteLine(item);
                                         //System.Diagnostics.Debug.WriteLine(gridInRoom.GridPosition.ToString());
-                                        gridPositions.Add(new Tuple<int,int>((int)gridInRoom.GridPosition.X, (int)gridInRoom.GridPosition.Y));
-                                        
+                                        gridPositions.Add(new Tuple<int, int>((int)gridInRoom.GridPosition.X, (int)gridInRoom.GridPosition.Y));
+
                                     }
 
                                     foreach (var item in gridPositions)
@@ -1320,21 +1776,21 @@ namespace SpaceIsFun
                                     }
                                     */
                                     // loop through crew members, for each one, find the next available grid and assign him that target
-                                    for(int i=0;i<selectedCrewMembers.Count;i++)
+                                    for (int i = 0; i < selectedCrewMembers.Count; i++)
                                     {
 
                                         //if there are more selected crew than available room spaces, do nothing
-                                        if (selectedCrewMembers.Count > (thisRoom.RoomSize-count))
+                                        if (selectedCrewMembers.Count > (thisRoom.RoomSize - count))
                                         {
                                             //break;
                                         }
-                                        
+
                                         // get the next available grid
                                         int targetGridUID = 0;
                                         foreach (int roomGridID in theGrids)
                                         {
 
-                                            
+
 
                                             // if this grid is filled by a man
 
@@ -1350,7 +1806,7 @@ namespace SpaceIsFun
                                             if (skipGrid == true)
                                             {
                                                 System.Diagnostics.Debug.WriteLine("skipGrid: " + skipGrid.ToString());
-                                                    
+
 
                                                 continue;
                                             }
@@ -1359,7 +1815,7 @@ namespace SpaceIsFun
                                                 targetGridUID = roomGridID;
                                                 break;
                                             }
-                                            
+
                                         }
 
 
@@ -1380,6 +1836,10 @@ namespace SpaceIsFun
                                             }
                                         }
 
+                                        if (CrewToRoom[thisCrew.UID] == thisRoomUID)
+                                        {
+                                            continue;
+                                        }
 
                                         List<Vector2> path = pather.FindOptimalPath(thisCrew.Position, thisGrid.GridPosition);
                                         thisCrew.Move(path);
@@ -1397,8 +1857,8 @@ namespace SpaceIsFun
 
 
                     }
-
-
+                    selectedCrewMembers.Clear();
+                    cursorState.Transition(idleCursor.Name);
                 }
 
                 #endregion
@@ -1407,14 +1867,56 @@ namespace SpaceIsFun
 
             hasSelectedCrew.leave += () =>
             {
-
+                
             };
             #endregion
 
+            
             #region weapon target cursor state methods
             targetWeapon.enter += () =>
             {
 
+                switch (weaponSlotsIndex)
+                {
+                    case 0:
+                        selectedWeaponUID = playerShip.WeaponSlots[0];
+                        weapon1Enabled = false;
+                        weapon1Selected = true;
+                        weapon1Disabled = false;
+
+                        break;
+                    case 1:
+                        selectedWeaponUID = playerShip.WeaponSlots[1];
+                        weapon2Enabled = false;
+                        weapon2Selected = true;
+                        weapon2Disabled = false;
+                        break;
+
+                    case 2:
+                        selectedWeaponUID = playerShip.WeaponSlots[2];
+                        weapon3Enabled = false;
+                        weapon3Selected = true;
+                        weapon3Disabled = false;
+                        break;
+
+                    case 3:
+                        selectedWeaponUID = playerShip.WeaponSlots[3];
+                        weapon4Enabled = false;
+                        weapon4Selected = true;
+                        weapon4Disabled = false;
+                        break;
+
+                    case 4:
+                        selectedWeaponUID = playerShip.WeaponSlots[4];
+                        weapon5Enabled = false;
+                        weapon5Selected = true;
+                        weapon5Disabled = false;
+                        break;
+                }
+
+                
+                
+                
             };
 
             targetWeapon.update += (GameTime gameTime) =>
@@ -1423,29 +1925,114 @@ namespace SpaceIsFun
 
                 #region mouse
 
+                Weapon selectedWeapon = (Weapon)WeaponManager.RetrieveEntity(selectedWeaponUID);
+                
                 if (previousMouseState.LeftButton == ButtonState.Released && currentMouseState.LeftButton == ButtonState.Pressed)
                 {
                     // if we've leftclicked
+                    System.Diagnostics.Debug.WriteLine("I'm here, clicking!");
+                    name = (Ship)ShipManager.RetrieveEntity(checkShipHover(currentMouseState));
+                    System.Diagnostics.Debug.WriteLine(name.UID);
+                    if (name.UID != -1 && name.UID != playerShip.UID)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Hey, it's an enemy!");
+                        selectedEnemy = true;
 
-                    // did we click an enemy room?
+                        dealDamage(name.UID, playerShip.WeaponUIDList[0]);
+                                            
+                        
+                        if (enemyShip.CurrentHP >= 0)
+                        {
+                            int j = 0;
+                            /*
+                                * there are 19 bars
+                                * 0 - 3   : red
+                                * 4 - 9   : orange
+                                * 10 - 19 : green
+                                */
+                            for (int i = 0; i < 19; i++)
+                            {
+                                if (enemyShip.CurrentHP > 6)
 
-                    // if so, get the weapon we're currently selecting
+                                    j = 9;
+                                // we are still in green 
+                                //don't worry about orange(6) and yellow(3)
+                                else if (enemyShip.CurrentHP > 3)
+                                    j = 3;
+                                //we are in orange 
+                                //don't worry about red(3) 
+                                else
+                                    j = 0;
+                                //we are in red, hp and bars finally line up
 
-                    // set the enemy room as the weapon's target
+                                if (i >= enemyShip.CurrentHP + j)
+                                {
+                                    enemyhealthBarTest[i].Visible = false;
+                                }                         
 
-                    // transition to idle cursor on success
+                            }
+                        }
+                        
+
+
+                        System.Diagnostics.Debug.WriteLine("enemy health after damage: "+name.CurrentHP.ToString());
+                        selectedWeapon.Charge = 0;
+                        selectedWeapon.ReadyToFire = false;
+                        selectedWeapon.weaponStateMachine.Transition("charging");
+                        cursorState.Transition(idleCursor.Name);
+                    }
+
+
+
+                 
+
                 }
+                /*
+                // if so, get the weapon we're currently selecting
+
+                if (currentKeyState.IsKeyDown(Keys.L) && selectedEnemy == true )
+                {
+                    System.Diagnostics.Debug.WriteLine("I'm targeting a ship!");
+                    //you want to activate weapon 1 to target the enemy
+                    selectedWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponUIDList[1]);
+                    //get weapon 1
+                    selectedWeapon.IsSelected = true;
+                    selectedWeapon.start_charging();
+                    //start its charging
+                    selectedWeapon.CurrentTarget = enemyShip.UID;
+                    //get the enemyID
+                }
+
+                */
+                // set the enemy room as the weapon's target
+
+                /*
+                if (selectedWeapon.ReadyToFire)
+                {
+                    //the weapon is in ready stage
+                    System.Diagnostics.Debug.WriteLine("I'm ready to pew pew!");
+                    dealDamage(name.UID, selectedWeapon.UID);
+                    //call weapon damage function in game1
+                    selectedWeapon.ReadyToFire = false;
+                    //the weapon is no longer ready to fire
+                    cursorState.Transition("idleCursor");
+                }
+                */
+                // transition to idle cursor on success
+                    
 
                 if (previousMouseState.RightButton == ButtonState.Released && currentMouseState.RightButton == ButtonState.Pressed)
                 {
                     // if we've rightclicked
 
-                    //Weapon thisWeapon = (Weapon)WeaponManager.RetrieveEntity(playerShip.WeaponSlots[0]);
+                    selectedWeapon.IsSelected = false;
 
                     // transition to idle cursor
 
                     cursorState.Transition("idleCursor");
                 }
+
+                
 
                 #endregion
                 #endregion
@@ -1453,6 +2040,43 @@ namespace SpaceIsFun
 
             targetWeapon.leave += () =>
             {
+                switch (weaponSlotsIndex)
+                {
+                    case 0:
+                        weapon1Enabled = true;
+                        weapon1Selected = false;
+                        weapon1Disabled = false;
+
+                        break;
+                    case 1:
+                        weapon2Enabled = true;
+                        weapon2Selected = false;
+                        weapon2Disabled = false;
+                        break;
+
+                    case 2:
+                        weapon3Enabled = true;
+                        weapon3Selected = false;
+                        weapon3Disabled = false;
+                        break;
+
+                    case 3:
+                        weapon4Enabled = true;
+                        weapon4Selected = false;
+                        weapon4Disabled = false;
+                        break;
+
+                    case 4:
+                        weapon5Enabled = true;
+                        weapon5Selected = false;
+                        weapon5Disabled = false;
+                        break;
+                }
+                selectedWeaponUID = -1;
+
+
+                
+
             };
             #endregion
 

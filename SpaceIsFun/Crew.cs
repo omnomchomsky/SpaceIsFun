@@ -6,10 +6,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Runtime.Serialization;
 
 namespace SpaceIsFun
 {
-    class Crew : Entity
+    [Serializable] class Crew : Entity, ISerializable
     {
         #region fields
 
@@ -179,11 +180,24 @@ namespace SpaceIsFun
             this.crewSelectedTexture = crewSelectedTexture;
             this.selected = false;
 
-            sprite = new Drawable(crewTexture, position, gPosition);
+            sprite = new Drawable(crewTexture, position, gPosition, 8, 8, AnimationType.Loop, 0, 8);
 
 
 
         }
+        //Constructor used when deserializing object
+        public Crew(SerializationInfo si, StreamingContext sc) : base()
+        {
+            position = (Vector2) si.GetValue("position", typeof(Vector2));
+            maxHP = si.GetInt32("maxHP");
+            currentHP = si.GetInt32("currentHP");
+            sprite = (Drawable)si.GetValue("sprite", typeof(Drawable));
+            crewTexture = (Texture2D)si.GetValue("crewTexture", typeof(Texture2D));
+            crewSelectedTexture = (Texture2D)si.GetValue("crewSelectedTexture", typeof(Texture2D));
+            selected = si.GetBoolean("selected");
+
+        }
+
 
         #endregion
 
@@ -192,7 +206,9 @@ namespace SpaceIsFun
         public override void Update(GameTime gameTime)
         {
             //System.Diagnostics.Debug.WriteLine("crew update");
-            
+            if (selected == true) Sprite.StartFrame = 32;
+            else Sprite.StartFrame = 0;
+
             Sprite.Update(gameTime);
             base.Update(gameTime);
         }
@@ -200,19 +216,10 @@ namespace SpaceIsFun
         public override void Draw(SpriteBatch spriteBatch)
         {
             
-            
-            if (selected == true)
-            {
-                Sprite.SpriteTexture = crewSelectedTexture;
-            }
-
-            if (selected == false)
-            {
-                Sprite.SpriteTexture = crewTexture;
-            }
 
             Sprite.Draw(spriteBatch);
             base.Draw(spriteBatch);
+            System.Diagnostics.Debug.WriteLine(Sprite.Frame);
         }
 
 
@@ -224,11 +231,12 @@ namespace SpaceIsFun
             if (selected == true)
             {
                 selected = false;
+                //Sprite.setStart(0);
             }
-
             else
             {
                 selected = true;
+                //Sprite.setStart(32);
             }
         }
 
@@ -237,7 +245,7 @@ namespace SpaceIsFun
         {
             //I have a dream that one day this function will exist, that it will tell the sprite where to move, and the sprite will move there as decreed by the mighty A* algorithm given to us by Peter Hart, Nils Nilsson and Bertram Raphael of the hallowed Stanford Research Instituteendregion
 
-
+            
             foreach (Vector2 point in path)
             {
                 Vector2 p = new Vector2((point.X-50) / 32, (point.Y-50) /32 );
@@ -245,7 +253,19 @@ namespace SpaceIsFun
             }
             
             sprite.setPath(path);
-            
+        }
+
+        //Function used when serializing an object
+        public virtual void GetObjectData(SerializationInfo si, StreamingContext sc)
+        {
+            si.AddValue("position", position, typeof(Vector2));
+            si.AddValue("maxHP", maxHP);
+            si.AddValue("currentHP", currentHP);
+            si.AddValue("sprite", sprite, typeof(Drawable));
+            si.AddValue("crewTexture", crewTexture, typeof(Texture2D));
+            si.AddValue("crewSelectedTexture", crewSelectedTexture, typeof(Texture2D));
+            si.AddValue("selected", selected);
+
         }
 
         #endregion
